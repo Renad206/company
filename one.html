@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-tag">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منقية - Manqiyah</title>
+
+<style>
+
+:root {
+--primary-purple: #8e44ad;
+--dark-purple: #4a148c;
+--light-purple: #b388ff;
+--black-bg: #0b0b0b;
+}
+
+body{
+margin:0;
+padding:0;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+background-color:var(--black-bg);
+font-family:'Segoe UI',Tahoma,sans-serif;
+color:#fff;
+}
+
+.container{
+width:100%;
+max-width:450px;
+padding:20px;
+position:relative;
+}
+
+.header{
+position:relative;
+height:100px;
+margin-bottom:40px;
+width:100%;
+}
+
+.lang-section{
+position:absolute;
+right:0;
+top:0;
+width:80px;
+text-align:center;
+cursor:pointer;
+}
+
+.globe-icon{
+font-size:26px;
+color:#5dade2;
+margin-bottom:2px;
+}
+
+.lang-text{
+font-size:13px;
+color:#bbb;
+}
+
+.brand-name{
+position:absolute;
+left:50%;
+top:20px;
+transform:translateX(-50%);
+font-size:28px;
+font-weight:bold;
+color:var(--light-purple);
+text-shadow:0 0 15px rgba(142,68,173,0.6);
+white-space:nowrap;
+}
+
+.logo-section{
+position:absolute;
+left:0;
+top:0;
+width:80px;
+text-align:center;
+cursor:pointer;
+}
+
+.logo-img{
+width:70px;
+height:70px;
+object-fit:contain;
+filter:drop-shadow(0 0 8px var(--primary-purple));
+}
+
+.form-group{
+margin-bottom:25px;
+text-align:start;
+}
+
+label{
+display:block;
+margin-bottom:10px;
+color:#fff;
+font-size:15px;
+}
+
+input{
+width:100%;
+padding:15px;
+background:#000;
+border:1px solid var(--dark-purple);
+border-radius:12px;
+color:white;
+box-sizing:border-box;
+outline:none;
+text-align:center;
+font-size:16px;
+}
+
+input:focus{
+border-color:var(--primary-purple);
+box-shadow:0 0 10px rgba(142,68,173,0.2);
+}
+
+.btn-login{
+width:100%;
+padding:15px;
+background:linear-gradient(135deg,#a569bd,#8e44ad);
+border:none;
+border-radius:12px;
+color:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-new-user{
+background:none;
+border:none;
+color:#8bf6e6;
+margin-top:25px;
+cursor:pointer;
+text-decoration:underline;
+width:100%;
+display:block;
+text-align:center;
+}
+
+#login-message{
+margin-top:15px;
+text-align:center;
+}
+
+#file-input{
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<div class="lang-section" onclick="toggleLanguage()">
+<div class="globe-icon">🌐</div>
+<div id="lang-text" class="lang-text">English</div>
+</div>
+
+<div class="brand-name" id="brand-title">منقية</div>
+
+<div class="logo-section" onclick="document.getElementById('file-input').click()">
+<img src="https://via.placeholder.com/80?text=Logo" id="logo-preview" class="logo-img">
+<input type="file" id="file-input" accept="image/*" onchange="loadLogo(event)">
+</div>
+
+</div>
+
+<form>
+
+<div class="form-group">
+<label id="label-id">اسم المستخدم</label>
+<input type="text" id="input-id" placeholder="ادخل اسم المستخدم">
+</div>
+
+<div class="form-group">
+<label id="label-pass">كلمة المرور</label>
+<input type="password" id="input-pass" placeholder="ادخل كلمة المرور">
+</div>
+
+<button type="button" class="btn-login" onclick="loginUser()">تسجيل الدخول</button>
+
+<button type="button" class="btn-new-user">بوابة شركة منقية</button>
+
+<p id="login-message"></p>
+
+</form>
+
+</div>
+
+<script>
+
+let currentLang='ar';
+
+function toggleLanguage(){
+
+const html=document.getElementById('html-tag');
+const langText=document.getElementById('lang-text');
+const brandTitle=document.getElementById('brand-title');
+const labelId=document.getElementById('label-id');
+const inputId=document.getElementById('input-id');
+const labelPass=document.getElementById('label-pass');
+const inputPass=document.getElementById('input-pass');
+const btnLogin=document.querySelector('.btn-login');
+
+if(currentLang==='ar'){
+
+html.dir='ltr';
+langText.innerText='العربية';
+brandTitle.innerText='MANQIYAH';
+labelId.innerText='Username';
+inputId.placeholder='Enter Username';
+labelPass.innerText='Password';
+inputPass.placeholder='Enter Password';
+btnLogin.innerText='Login';
+
+currentLang='en';
+
+}else{
+
+html.dir='rtl';
+langText.innerText='English';
+brandTitle.innerText='منقية';
+labelId.innerText='اسم المستخدم';
+inputId.placeholder='ادخل اسم المستخدم';
+labelPass.innerText='كلمة المرور';
+inputPass.placeholder='ادخل كلمة المرور';
+btnLogin.innerText='تسجيل الدخول';
+
+currentLang='ar';
+
+}
+
+}
+
+function loadLogo(event){
+const image=document.getElementById('logo-preview');
+image.src=URL.createObjectURL(event.target.files[0]);
+}
+
+function loginUser(){
+
+const username=document.getElementById("input-id").value;
+const password=document.getElementById("input-pass").value;
+const message=document.getElementById("login-message");
+
+if(username==="manqiyah" && password==="1234"){
+
+message.innerText="تم تسجيل دخولك بنجاح";
+
+setTimeout(function(){
+
+window.location.href="two.html";
+
+},1000);
+
+}else{
+
+message.innerText="اسم المستخدم أو كلمة المرور غير صحيحة";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

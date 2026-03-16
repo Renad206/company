@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تقييم المرشحين - MANQIYAH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0b0b;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+            --text-dim: #b0b0b0;
+            --purple-accent: #a020f0;
+            --purple-glow: 0 0 15px rgba(160, 32, 240, 0.6);
+            --green-accept: #2ecc71;
+            --red-reject: #e74c3c;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Navbar التصميم الجديد */
+        .navbar { width: 100%; background: var(--card-bg); border-bottom: 1px solid #222; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .nav-brand { font-weight: 700; font-size: 1.5rem; color: var(--purple-accent); letter-spacing: 2px; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links span { color: var(--text-dim); cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .nav-links span:hover { color: var(--purple-accent); }
+        .user-icon { background: #222; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--purple-accent); cursor: pointer; }
+
+        .main-container { display: grid; grid-template-columns: 350px 1fr; gap: 30px; width: 100%; max-width: 1300px; padding: 30px 20px; }
+        
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .name-card { background: var(--card-bg); border: 1px solid #222; padding: 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; font-size: 1.1rem; position: relative; display: flex; justify-content: center; align-items: center; }
+        .name-card:hover, .name-card.active { border-color: var(--purple-accent); box-shadow: var(--purple-glow); }
+        
+        /* أيقونات الحالة في القائمة */
+        .status-icon { position: absolute; left: 15px; font-weight: bold; font-size: 1.2rem; }
+
+        .details-panel { background: var(--card-bg); border: 1px solid #222; border-radius: 12px; padding: 40px; display: none; opacity: 0; transition: opacity 0.4s ease; position: relative; }
+        .details-panel.visible { display: block; opacity: 1; }
+        
+        .status-badge { position: absolute; top: 20px; left: 20px; padding: 8px 25px; border: 1px solid transparent; border-radius: 4px; font-weight: bold; display: none; font-size: 0.9rem; }
+        .header-name { font-size: 2rem; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #222; padding-bottom: 10px; }
+
+        .content-layout { display: flex; justify-content: space-between; gap: 20px; }
+        .ai-section { width: 30%; }
+        .match-box { border: 2px solid var(--purple-accent); padding: 20px; text-align: center; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .match-box:hover { box-shadow: var(--purple-glow); }
+        .match-percent { font-size: 2.2rem; color: var(--green-accept); font-weight: bold; display: none; }
+        #aiReasons { display: none; margin-top: 20px; font-size: 0.85rem; border-top: 1px solid #222; padding-top: 10px; }
+
+        .personal-info { width: 68%; display: flex; flex-direction: column; gap: 8px; }
+        .info-row { display: flex; border-bottom: 1px solid #1a1a1a; padding-bottom: 5px; align-items: center; }
+        .label { color: var(--text-dim); width: 140px; font-weight: 300; font-size: 0.9rem; }
+        .value-en { direction: ltr; font-family: Arial; display: inline-block; }
+
+        .files-section { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #333; }
+        .file-item { display: inline-block; background: #1a1a1a; padding: 5px 12px; border-radius: 4px; margin-left: 10px; font-size: 0.8rem; cursor: pointer; border: 1px solid #333; transition: 0.3s; }
+        .file-item:hover { border-color: var(--purple-accent); color: var(--purple-accent); }
+
+        .salary-container { text-align: center; margin-top: 20px; }
+        .salary-value { font-size: 2rem; color: var(--purple-accent); font-family: Arial; margin: 5px 0; font-weight: bold; }
+        .salary-editor { display: none; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; direction: ltr; }
+        .step-btn { background: #1a1a1a; border: 1px solid var(--purple-accent); color: var(--purple-accent); width: 35px; height: 35px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 1.2rem; }
+        .salary-input { background: #000; color: var(--purple-accent); border: 1px solid #333; font-size: 1.5rem; width: 100px; text-align: center; border-radius: 4px; font-family: Arial; }
+
+        .btn { background: transparent; border: 1px solid #333; color: white; padding: 10px 18px; cursor: pointer; border-radius: 4px; transition: 0.3s; font-family: 'Tajawal'; font-size: 0.85rem; }
+        .btn:hover { border-color: var(--purple-accent); box-shadow: var(--purple-glow); }
+        .btn-accept { border-color: var(--green-accept); color: var(--green-accept); }
+        .btn-reset { border-color: #f39c12; color: #f39c12; }
+        .btn-reject { border-color: var(--red-reject); color: var(--red-reject); }
+        
+        ul { padding-right: 15px; color: var(--text-dim); margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">MANQIYAH</div>
+    <div class="nav-links">
+        <span>الوظائف</span>
+        <span>المتقدمين</span>
+        <span>التقارير</span>
+    </div>
+    <div class="user-icon">👤</div>
+</nav>
+
+<div class="main-container">
+    <div class="sidebar" id="sidebar"></div>
+
+    <div class="details-panel" id="detailsView">
+        <div id="statusBadge" class="status-badge"></div>
+        <div class="header-name" id="dispTitleName"></div>
+
+        <div class="content-layout">
+            <div class="ai-section">
+                <div class="match-box" onclick="toggleMatchReveal()">
+                    <div id="clickText" style="color: var(--purple-accent); font-size: 0.85rem;">إظهار نسبة التطابق</div>
+                    <div id="dispMatch" class="match-percent"></div>
+                </div>
+                <div id="aiReasons">
+                    <p style="color: var(--green-accept);">أسباب التطابق:</p>
+                    <ul id="dispPros"></ul>
+                    <p style="color: #f1c40f;">⚠️ أسباب عدم التطابق:</p>
+                    <ul id="dispCons"></ul>
+                </div>
+            </div>
+
+            <div class="personal-info">
+                <div class="info-row"><span class="label">الاسم الرباعي:</span> <span id="dispFullName"></span></div>
+                <div class="info-row"><span class="label">رقم الهوية:</span> <span id="dispID" class="value-en"></span></div>
+                <div class="info-row"><span class="label">العمر:</span> <span id="dispAge" class="value-en"></span></div>
+                <div class="info-row"><span class="label">تاريخ الميلاد:</span> <span id="dispDOB" class="value-en"></span></div>
+                <div class="info-row"><span class="label">رقم الجوال:</span> <span id="dispPhone" class="value-en"></span></div>
+                <div class="info-row"><span class="label">البريد الإلكتروني:</span> <span id="dispEmail" class="value-en"></span></div>
+                <div class="info-row"><span class="label">الجامعة:</span> <span id="dispUni"></span></div>
+                <div class="info-row"><span class="label">الدرجة العلمية:</span> <span id="dispDegree"></span></div>
+                <div class="info-row"><span class="label">سنوات الخبرة:</span> <span id="dispExp"></span></div>
+                
+                <div class="files-section">
+                    <span class="label" style="display:block; margin-bottom:10px;">الملفات المستلمة:</span>
+                    <div class="file-item">📄 السيرة الذاتية</div>
+                    <div class="file-item">🎓 الشهادة الجامعية</div>
+                    <div class="file-item">🆔 الهوية الوطنية</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px;">
+            <div class="salary-container">
+                <div style="font-size: 0.8rem; color: var(--text-dim);">الراتب المتوقع (بالدولار):</div>
+                <div id="salaryDisplay" class="salary-value"></div>
+                <div id="salaryEditor" class="salary-editor">
+                    <button class="step-btn" onclick="adjustSalary(-500)">-</button>
+                    <input type="text" id="salaryInput" class="salary-input" readonly>
+                    <button class="step-btn" onclick="adjustSalary(500)">+</button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-accept" onclick="updateLocalStatus('مقبول مبدئياً')">قبول</button>
+                    <button class="btn btn-reset" onclick="resetSalary()">إعادة</button>
+                    <button class="btn" id="editBtn" onclick="toggleEdit()">تحرير</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-accept" style="font-weight: bold; border-width: 2px;" onclick="finalDecision('قبول نهائي')">قبول نهائي</button>
+                <button class="btn btn-reject" style="font-weight: bold; border-width: 2px;" onclick="finalDecision('رفض نهائي')">رفض نهائي</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentIndex = null;
+    let isEditing = false;
+
+    // بيانات المتقدمين الـ 6
+    const candidates = [
+        { name: "عبدالله محمد الدوسري", id: "113884422", age: "28", dob: "1995 / 05 / 12", phone: "0501122334", email: "abdullah@gmail.com", uni: "جامعة الملك سعود", degree: "بكالوريوس تسويق", exp: "4 سنوات", match: "88%", salary: 7000, originalSalary: 7000, pros: ["خبرة محلية"], cons: ["نقص لغة تقنية"], status: "" },
+        { name: "سارة علي أحمد", id: "109223344", age: "31", dob: "1992 / 11 / 20", phone: "0559988776", email: "sara@example.com", uni: "جامعة الأميرة نورة", degree: "ماجستير إعلام", exp: "6 سنوات", match: "94%", salary: 9500, originalSalary: 9500, pros: ["شهادة عليا"], cons: ["توقعات مالية عالية"], status: "" },
+        { name: "فهد منصور العتيبي", id: "111223344", age: "24", dob: "2000 / 02 / 15", phone: "0543322110", email: "fahad@example.com", uni: "الكلية التقنية بالرياض", degree: "دبلوم جرافيك", exp: "سنتان", match: "75%", salary: 4200, originalSalary: 4200, pros: ["إبداع فني"], cons: ["نقص خبرة إدارية"], status: "" },
+        { name: "ريم خالد السديري", id: "108776655", age: "27", dob: "1997 / 08 / 05", phone: "0561122334", email: "reem@example.com", uni: "جامعة جدة", degree: "بكالوريوس علوم حاسب", exp: "3 سنوات", match: "91%", salary: 8500, originalSalary: 8500, pros: ["مهارات برمجية"], cons: ["تغيير مسار مهني"], status: "" },
+        { name: "عمر سليمان الحربي", id: "115443322", age: "30", dob: "1994 / 04 / 30", phone: "0504433221", email: "omar@example.com", uni: "جامعة الإمام", degree: "إدارة أعمال", exp: "5 سنوات", match: "82%", salary: 7200, originalSalary: 7200, pros: ["قيادة فرق"], cons: ["ضعف في اللغة الإنجليزية"], status: "" },
+        { name: "نجلاء فيصل المطيري", id: "107665544", age: "26", dob: "1998 / 12 / 12", phone: "0556677889", email: "noura@example.com", uni: "جامعة الدمام", degree: "موارد بشرية", exp: "سنة واحدة", match: "79%", salary: 5500, originalSalary: 5500, pros: ["طموح عالي"], cons: ["حاجة لتدريب مكثف"], status: "" }
+    ];
+
+    function init() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = '';
+        candidates.forEach((c, index) => {
+            const card = document.createElement('div');
+            card.className = 'name-card' + (currentIndex === index ? ' active' : '');
+            
+            // إضافة الأيقونات بناءً على الحالة
+            let icon = '';
+            if(c.status === 'قبول نهائي' || c.status === 'مقبول مبدئياً') {
+                icon = '<span class="status-icon" style="color:var(--green-accept)">✔</span>';
+            } else if(c.status === 'رفض نهائي') {
+                icon = '<span class="status-icon" style="color:var(--red-reject)">✖</span>';
+            }
+            
+            card.innerHTML = `${icon} <span>${c.name}</span>`;
+            card.onclick = () => handleCardClick(index, card);
+            sidebar.appendChild(card);
+        });
+    }
+
+    function handleCardClick(index, element) {
+        if (currentIndex === index && document.getElementById('detailsView').style.display === 'block') {
+            document.getElementById('detailsView').style.display = 'none';
+            element.classList.remove('active');
+            currentIndex = null;
+            return;
+        }
+        showDetails(index, element);
+    }
+
+    function showDetails(index, element) {
+        currentIndex = index;
+        init();
+
+        const c = candidates[index];
+        document.getElementById('dispTitleName').innerText = c.name;
+        document.getElementById('dispFullName').innerText = c.name;
+        document.getElementById('dispID').innerText = c.id;
+        document.getElementById('dispAge').innerText = c.age;
+        document.getElementById('dispDOB').innerText = c.dob;
+        document.getElementById('dispPhone').innerText = c.phone;
+        document.getElementById('dispEmail').innerText = c.email;
+        document.getElementById('dispUni').innerText = c.uni;
+        document.getElementById('dispDegree').innerText = c.degree;
+        document.getElementById('dispExp').innerText = c.exp;
+        document.getElementById('dispMatch').innerText = c.match;
+        document.getElementById('salaryDisplay').innerText = c.salary;
+        document.getElementById('dispPros').innerHTML = c.pros.map(p => `<li>- ${p}</li>`).join('');
+        document.getElementById('dispCons').innerHTML = c.cons.map(cn => `<li>- ${cn}</li>`).join('');
+
+        // تصفير واجهة التطابق
+        document.getElementById('dispMatch').style.display = 'none';
+        document.getElementById('clickText').style.display = 'block';
+        document.getElementById('aiReasons').style.display = 'none';
+        
+        displayStatus(c.status);
+        document.getElementById('detailsView').style.display = 'block';
+        setTimeout(() => { document.getElementById('detailsView').classList.add('visible'); }, 10);
+    }
+
+    function updateLocalStatus(status) {
+        candidates[currentIndex].status = status;
+        displayStatus(status);
+        init(); // تحديث الأيقونة في القائمة
+    }
+
+    function finalDecision(status) {
+        candidates[currentIndex].status = status;
+        displayStatus(status);
+        init(); // تحديث الأيقونة (✔ أو ✖) في القائمة
+        alert(`تم إرسال بريد إلكتروني رسمي إلى ${candidates[currentIndex].email} بقرار: ${status}`);
+    }
+
+    function resetSalary() {
+        candidates[currentIndex].salary = candidates[currentIndex].originalSalary;
+        document.getElementById('salaryDisplay').innerText = candidates[currentIndex].salary;
+        document.getElementById('salaryInput').value = candidates[currentIndex].salary;
+    }
+
+    function displayStatus(status) {
+        const badge = document.getElementById('statusBadge');
+        if (!status) { badge.style.display = 'none'; return; }
+        badge.innerText = status;
+        badge.style.display = 'block';
+        badge.style.borderColor = status.includes('قبول') ? 'var(--green-accept)' : 'var(--red-reject)';
+        badge.style.color = status.includes('قبول') ? 'var(--green-accept)' : 'var(--red-reject)';
+    }
+
+    function toggleMatchReveal() {
+        const isShown = document.getElementById('dispMatch').style.display === 'block';
+        document.getElementById('dispMatch').style.display = isShown ? 'none' : 'block';
+        document.getElementById('clickText').style.display = isShown ? 'block' : 'none';
+        document.getElementById('aiReasons').style.display = isShown ? 'none' : 'block';
+    }
+
+    function toggleEdit() {
+        const display = document.getElementById('salaryDisplay');
+        const editor = document.getElementById('salaryEditor');
+        const btn = document.getElementById('editBtn');
+        if (!isEditing) {
+            display.style.display = 'none'; editor.style.display = 'flex';
+            document.getElementById('salaryInput').value = candidates[currentIndex].salary;
+            btn.innerText = 'حفظ'; isEditing = true;
+        } else {
+            display.style.display = 'block'; editor.style.display = 'none';
+            btn.innerText = 'تحرير'; isEditing = false;
+        }
+    }
+
+    function adjustSalary(amount) {
+        candidates[currentIndex].salary += amount;
+        document.getElementById('salaryInput').value = candidates[currentIndex].salary;
+        document.getElementById('salaryDisplay').innerText = candidates[currentIndex].salary;
+    }
+
+    init();
+</script>
+</body>
+</html>
