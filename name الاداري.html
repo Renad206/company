@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تقييم المرشحين - القطاع الإداري</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0b0b;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+            --text-dim: #b0b0b0;
+            --purple-accent: #a020f0;
+            --purple-glow: 0 0 15px rgba(160, 32, 240, 0.6);
+            --green-accept: #2ecc71;
+            --red-reject: #e74c3c;
+        }
+
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .main-container { display: grid; grid-template-columns: 350px 1fr; gap: 30px; width: 100%; max-width: 1300px; }
+        
+        .sidebar-container { display: flex; flex-direction: column; gap: 15px; }
+        .company-logo { font-size: 1.5rem; font-weight: 800; color: var(--purple-accent); letter-spacing: 2px; text-align: center; padding: 10px; border-bottom: 1px solid #222; font-family: 'Arial', sans-serif; }
+        
+        .sidebar { display: flex; flex-direction: column; gap: 10px; height: 80vh; overflow-y: auto; padding-left: 10px; }
+        .name-card { background: var(--card-bg); border: 1px solid #222; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: right; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .name-card:hover, .name-card.active { border-color: var(--purple-accent); box-shadow: var(--purple-glow); }
+        
+        .status-icon { font-weight: bold; display: none; font-size: 1.2rem; background: none; padding: 0; border: none; }
+        .status-icon.accept { color: var(--green-accept); }
+        .status-icon.reject { color: var(--red-reject); }
+
+        .details-panel { background: var(--card-bg); border: 1px solid #222; border-radius: 12px; padding: 40px; display: none; opacity: 0; transition: opacity 0.3s ease; position: relative; }
+        .details-panel.visible { display: block; opacity: 1; }
+        
+        .status-badge { position: absolute; top: 20px; left: 20px; padding: 8px 25px; border: 1px solid transparent; border-radius: 4px; font-weight: bold; display: none; font-size: 0.9rem; }
+        .header-name { font-size: 1.8rem; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #222; padding-bottom: 10px; }
+
+        .content-layout { display: flex; justify-content: space-between; gap: 20px; }
+        
+        .ai-section { width: 30%; display: flex; flex-direction: column; align-items: center; justify-content: start; }
+        .match-box { 
+            border: 2px solid var(--purple-accent); 
+            padding: 15px 25px; 
+            text-align: center; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            transition: 0.3s; 
+            background: rgba(160, 32, 240, 0.05);
+            box-shadow: var(--purple-glow);
+            width: 85%; 
+            min-height: 50px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .match-box:hover { background: rgba(160, 32, 240, 0.15); }
+        .match-percent { font-size: 2rem; color: var(--green-accept); font-weight: bold; display: none; font-family: Arial; }
+        
+        #aiReasons { display: none; margin-top: 20px; font-size: 0.85rem; border-top: 1px solid #222; padding-top: 10px; width: 100%; }
+
+        .personal-info { width: 68%; display: flex; flex-direction: column; gap: 8px; }
+        .info-row { display: flex; border-bottom: 1px solid #1a1a1a; padding-bottom: 5px; align-items: center; }
+        .label { color: var(--text-dim); width: 140px; font-weight: 300; font-size: 0.9rem; }
+        .value-en { direction: ltr; font-family: Arial; display: inline-block; }
+
+        .files-section { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #333; }
+        .file-item { display: inline-block; background: #1a1a1a; padding: 5px 12px; border-radius: 4px; margin-left: 10px; font-size: 0.8rem; cursor: pointer; border: 1px solid #333; transition: 0.3s; }
+        .file-item:hover { border-color: var(--purple-accent); }
+
+        .preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
+        .preview-content { background: #111; padding: 35px; border-radius: 12px; border: 1px solid #333; width: 85%; max-width: 500px; color: #fff; position: relative; text-align: right; box-shadow: 0 0 20px rgba(0,0,0,1); }
+        .preview-header { border-bottom: 1px solid var(--purple-accent); margin-bottom: 20px; padding-bottom: 10px; text-align: center; }
+        .preview-body p { margin: 12px 0; border-bottom: 1px solid #1a1a1a; padding-bottom: 8px; font-size: 0.95rem; }
+        .preview-body strong { color: var(--purple-accent); margin-left: 5px; }
+        .close-preview { position: absolute; top: 15px; left: 15px; background: none; border: 1px solid #444; color: #fff; padding: 5px 12px; cursor: pointer; border-radius: 4px; font-size: 0.8rem; }
+
+        .id-card-view { background: #000; padding: 20px; border-radius: 10px; border: 1px solid #333; display: flex; gap: 20px; align-items: center; margin-top: 10px; }
+        .id-photo-placeholder { width: 100px; height: 120px; border-radius: 5px; border: 1px dashed #444; display: flex; align-items: center; justify-content: center; background: #151515; color: #333; font-size: 3rem; }
+
+        .salary-container { text-align: center; margin-top: 20px; }
+        .salary-value { font-size: 2rem; color: var(--purple-accent); font-family: Arial; margin: 5px 0; font-weight: bold; }
+        .salary-editor { display: none; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; direction: ltr; }
+        .step-btn { background: #1a1a1a; border: 1px solid var(--purple-accent); color: var(--purple-accent); width: 35px; height: 35px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .salary-input { background: #000; color: var(--purple-accent); border: 1px solid #333; font-size: 1.5rem; width: 100px; text-align: center; font-family: Arial; }
+
+        .btn { background: transparent; border: 1px solid #333; color: white; padding: 10px 18px; cursor: pointer; border-radius: 4px; transition: 0.3s; font-family: 'Tajawal'; font-size: 0.85rem; }
+        .btn:hover { border-color: var(--purple-accent); box-shadow: var(--purple-glow); }
+        .btn-accept { border-color: var(--green-accept); color: var(--green-accept); }
+        .btn-reject { border-color: var(--red-reject); color: var(--red-reject); }
+        
+        #doneBtn { display: none; border-color: var(--green-accept); color: var(--green-accept); }
+        ul { padding-right: 15px; color: var(--text-dim); margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="sidebar-container">
+        <div class="company-logo">COMPANY</div>
+        <div class="sidebar" id="sidebar"></div>
+    </div>
+
+    <div class="details-panel" id="detailsView">
+        <div id="statusBadge" class="status-badge"></div>
+        <div class="header-name" id="dispTitleName"></div>
+
+        <div class="content-layout">
+            <div class="ai-section">
+                <div class="match-box" onclick="toggleMatchReveal()">
+                    <div id="clickText" style="color: var(--text-main); font-size: 1rem; font-weight: 500;">إظهار نسبة التطابق</div>
+                    <div id="dispMatch" class="match-percent"></div>
+                </div>
+                <div id="aiReasons">
+                    <p style="color: var(--green-accept);">نقاط القوة:</p>
+                    <ul id="dispPros"></ul>
+                    <p style="color: #f1c40f;">⚠️ ملاحظات:</p>
+                    <ul id="dispCons"></ul>
+                </div>
+            </div>
+
+            <div class="personal-info">
+                <div class="info-row"><span class="label">الاسم الكامل:</span> <span id="dispFullName"></span></div>
+                <div class="info-row"><span class="label">رقم الهوية:</span> <span id="dispID" class="value-en"></span></div>
+                <div class="info-row"><span class="label">العمر:</span> <span id="dispAge" class="value-en"></span></div>
+                <div class="info-row"><span class="label">تاريخ الميلاد:</span> <span id="dispDOB" class="value-en"></span></div>
+                <div class="info-row"><span class="label">رقم الجوال:</span> <span id="dispPhone" class="value-en"></span></div>
+                <div class="info-row"><span class="label">البريد الإلكتروني:</span> <span id="dispEmail" class="value-en"></span></div>
+                <div class="info-row"><span class="label">الجامعة:</span> <span id="dispUni"></span></div>
+                <div class="info-row"><span class="label">التخصص الإداري:</span> <span id="dispDegree"></span></div>
+                <div class="info-row"><span class="label">سنوات الخبرة:</span> <span id="dispExp"></span></div>
+                
+                <div class="files-section">
+                    <span class="label" style="display:block; margin-bottom:10px;">الوثائق المرفقة:</span>
+                    <div class="file-item" onclick="openFilePreview('السيرة الذاتية')">📄 السيرة الذاتية</div>
+                    <div class="file-item" onclick="openFilePreview('وثيقة التخرج')">🎓 وثيقة التخرج</div>
+                    <div class="file-item" onclick="openFilePreview('شهادة خبرة')">🏢 شهادة خبرة</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px;">
+            <div class="salary-container">
+                <div style="font-size: 0.8rem; color: var(--text-dim);">الراتب المتوقع (SAR):</div>
+                <div id="salaryDisplay" class="salary-value"></div>
+                <div id="salaryEditor" class="salary-editor">
+                    <button class="step-btn" onclick="adjustSalary(-500)">-</button>
+                    <input type="text" id="salaryInput" class="salary-input" readonly>
+                    <button class="step-btn" onclick="adjustSalary(500)">+</button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px; justify-content: center;">
+                    <button class="btn" id="editBtn" onclick="toggleEdit()">تحرير</button>
+                    <button class="btn" id="doneBtn" onclick="toggleEdit()">تم</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-accept" style="font-weight: bold; border-width: 2px;" onclick="updateStatus('قبول نهائي')">قبول نهائي</button>
+                <button class="btn btn-reject" style="font-weight: bold; border-width: 2px;" onclick="updateStatus('رفض نهائي')">رفض نهائي</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="filePreviewModal" class="preview-modal">
+    <div class="preview-content">
+        <button class="close-preview" onclick="closeFilePreview()">إغلاق</button>
+        <div class="preview-header">
+            <h2 id="modalFileTitle" style="color: var(--purple-accent); margin:0;"></h2>
+        </div>
+        <div class="preview-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    let currentIndex = null;
+    let isEditing = false;
+
+    const candidates = [
+        { name: "مريم احمد العمير", id: "1033221144", age: "25", dob: "2001/04/18", phone: "0509988771", email: "m.omair@example.com", uni: "جامعة الملك فيصل", degree: "إدارة أعمال", exp: "3 سنوات", match: "97%", salary: 11000, pros: ["مهارات قيادية عالية", "إتقان اللغة الإنجليزية"], cons: ["لا يوجد"], status: "" },
+        { name: "عبدالله منصور الحربي", id: "1055667788", age: "29", dob: "1997/09/12", phone: "0554433220", email: "a.harbi@admin.sa", uni: "جامعة الإمام محمد بن سعود", degree: "الموارد البشرية", exp: "5 سنوات", match: "89%", salary: 13500, pros: ["خبير في أنظمة العمل السعودي"], cons: ["تحتاج مهارات تقنية إضافية"], status: "" },
+        { name: "سارة فهد السديري", id: "1122334400", age: "27", dob: "1999/01/30", phone: "0541122336", email: "sara.s@office.com", uni: "جامعة نورة", degree: "الإدارة العامة", exp: "4 سنوات", match: "92%", salary: 10500, pros: ["دقة عالية في الأرشفة", "سرعة الإنجاز"], cons: ["تفضل العمل عن بعد"], status: "" }
+    ];
+
+    function init() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = '';
+        candidates.forEach((c, index) => {
+            const card = document.createElement('div');
+            card.className = 'name-card' + (currentIndex === index ? ' active' : '');
+            
+            let iconSymbol = '';
+            let iconClass = 'status-icon';
+            if (c.status === 'قبول نهائي') { 
+                iconSymbol = '✓'; 
+                iconClass += ' accept';
+            } else if (c.status === 'رفض نهائي') { 
+                iconSymbol = '✕'; 
+                iconClass += ' reject';
+            }
+
+            card.innerHTML = `<span>${c.name}</span> <span class="${iconClass}" id="status-icon-${index}" style="display: ${iconSymbol ? 'inline' : 'none'}">${iconSymbol}</span>`;
+            card.onclick = () => handleCardClick(index, card);
+            sidebar.appendChild(card);
+        });
+    }
+
+    function handleCardClick(index, element) {
+        const view = document.getElementById('detailsView');
+        if (currentIndex === index && view.classList.contains('visible')) {
+            view.classList.remove('visible');
+            setTimeout(() => { view.style.display = 'none'; }, 300);
+            element.classList.remove('active');
+            currentIndex = null;
+        } else {
+            showDetails(index, element);
+        }
+    }
+
+    function showDetails(index, element) {
+        currentIndex = index;
+        document.querySelectorAll('.name-card').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+        const c = candidates[index];
+        document.getElementById('dispTitleName').innerText = c.name;
+        document.getElementById('dispFullName').innerText = c.name;
+        document.getElementById('dispID').innerText = c.id;
+        document.getElementById('dispAge').innerText = c.age;
+        document.getElementById('dispDOB').innerText = c.dob;
+        document.getElementById('dispPhone').innerText = c.phone;
+        document.getElementById('dispEmail').innerText = c.email;
+        document.getElementById('dispUni').innerText = c.uni;
+        document.getElementById('dispDegree').innerText = c.degree;
+        document.getElementById('dispExp').innerText = c.exp;
+        document.getElementById('dispMatch').innerText = c.match;
+        document.getElementById('salaryDisplay').innerText = c.salary;
+        document.getElementById('dispPros').innerHTML = c.pros.map(p => `<li>- ${p}</li>`).join('');
+        document.getElementById('dispCons').innerHTML = c.cons.map(cn => `<li>- ${cn}</li>`).join('');
+        document.getElementById('dispMatch').style.display = 'none';
+        document.getElementById('clickText').style.display = 'block';
+        document.getElementById('aiReasons').style.display = 'none';
+        document.getElementById('salaryDisplay').style.display = 'block';
+        document.getElementById('salaryEditor').style.display = 'none';
+        document.getElementById('editBtn').style.display = 'inline-block';
+        document.getElementById('doneBtn').style.display = 'none';
+        isEditing = false;
+        displayStatus(c.status);
+        const view = document.getElementById('detailsView');
+        view.style.display = 'block';
+        setTimeout(() => { view.classList.add('visible'); }, 10);
+    }
+
+    function toggleMatchReveal() {
+        const isShown = document.getElementById('dispMatch').style.display === 'block';
+        document.getElementById('dispMatch').style.display = isShown ? 'none' : 'block';
+        document.getElementById('clickText').style.display = isShown ? 'block' : 'none';
+        document.getElementById('aiReasons').style.display = isShown ? 'none' : 'block';
+    }
+
+    function toggleEdit() {
+        const display = document.getElementById('salaryDisplay');
+        const editor = document.getElementById('salaryEditor');
+        const editBtn = document.getElementById('editBtn');
+        const doneBtn = document.getElementById('doneBtn');
+        if (!isEditing) {
+            display.style.display = 'none';
+            editor.style.display = 'flex';
+            editBtn.style.display = 'none';
+            doneBtn.style.display = 'inline-block';
+            document.getElementById('salaryInput').value = candidates[currentIndex].salary;
+            isEditing = true;
+        } else {
+            display.style.display = 'block';
+            editor.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+            doneBtn.style.display = 'none';
+            isEditing = false;
+        }
+    }
+
+    function adjustSalary(amount) {
+        candidates[currentIndex].salary += amount;
+        document.getElementById('salaryInput').value = candidates[currentIndex].salary;
+        document.getElementById('salaryDisplay').innerText = candidates[currentIndex].salary;
+    }
+
+    function updateStatus(status) {
+        if (currentIndex === null) return;
+        const c = candidates[currentIndex];
+        c.status = status;
+        displayStatus(status);
+        const statusIcon = document.getElementById(`status-icon-${currentIndex}`);
+        statusIcon.className = 'status-icon';
+        if (status === 'قبول نهائي') {
+            statusIcon.innerText = '✓';
+            statusIcon.classList.add('accept');
+            statusIcon.style.display = 'inline';
+            alert(`📧 تم إرسال رسالة القبول لـ ${c.name} عبر: ${c.email}`);
+        } else if (status === 'رفض نهائي') {
+            statusIcon.innerText = '✕';
+            statusIcon.classList.add('reject');
+            statusIcon.style.display = 'inline';
+            alert(`📧 تم إرسال رسالة اعتذار لـ ${c.name}`);
+        }
+    }
+
+    function displayStatus(status) {
+        const badge = document.getElementById('statusBadge');
+        if (!status) { badge.style.display = 'none'; return; }
+        badge.innerText = status;
+        badge.style.display = 'block';
+        badge.style.borderColor = status.includes('قبول') ? 'var(--green-accept)' : 'var(--red-reject)';
+        badge.style.color = status.includes('قبول') ? 'var(--green-accept)' : 'var(--red-reject)';
+    }
+
+    function openFilePreview(type) {
+        if (currentIndex === null) return;
+        const c = candidates[currentIndex];
+        const modal = document.getElementById('filePreviewModal');
+        const body = document.getElementById('modalBody');
+        document.getElementById('modalFileTitle').innerText = type;
+        body.innerHTML = `<p><strong>عرض ملف:</strong> ${type}</p><p>المرشح: ${c.name}</p><p style="color:#aaa;">[ يتم تحميل الملف الإداري... ]</p>`;
+        modal.style.display = 'flex';
+    }
+
+    function closeFilePreview() {
+        document.getElementById('filePreviewModal').style.display = 'none';
+    }
+
+    init();
+</script>
+</body>
+</html>
